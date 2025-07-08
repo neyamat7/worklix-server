@@ -1,0 +1,41 @@
+const admin = require("../firebase");
+
+const verifyFirebaseToken = async (req, res, next) => {
+  const authHeader = req.headers?.authorization;
+  // const email = req.query.email;
+
+  // if (req.path === "/artifacts" && !email) {
+  //   req.decoded = null;
+  //   return next();
+  // }
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).send({ error: "Unauthorized access" });
+  }
+
+  // console.log("authHeader found, proceeding with token verification");
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.decoded = decodedToken;
+    next();
+  } catch (error) {
+    console.error("Error verifying Firebase token:", error);
+    return res.status(401).send({ error: "Unauthorized access" });
+  }
+};
+
+// verify token email
+const verifyTokenEmail = (req, res, next) => {
+  const email = req.query.email;
+  console.log(email);
+
+  // If email is provided in the query, check if it matches the decoded token's email
+  if (email && (!req.decoded || email !== req.decoded.email)) {
+    return res.status(403).send({ error: "Forbidden access" });
+  }
+  next();
+};
+
+module.exports = { verifyFirebaseToken, verifyTokenEmail };
