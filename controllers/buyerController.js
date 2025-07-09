@@ -127,6 +127,44 @@ exports.getTasksByBuyerEmail = async (req, res) => {
   }
 };
 
+exports.updateTaskById = async (req, res) => {
+  const { taskId } = req.params;
+  if (!ObjectId.isValid(taskId)) {
+    return res.status(400).json({ message: "Invalid task ID." });
+  }
+
+  const { task_title, task_detail, submission_info } = req.body;
+
+  // Validate at least one field is provided
+  if (!task_title && !task_detail && !submission_info) {
+    return res
+      .status(400)
+      .json({ message: "At least one field must be provided for update." });
+  }
+
+  // Build the update object dynamically
+  const updateFields = {};
+  if (task_title) updateFields.task_title = task_title;
+  if (task_detail) updateFields.task_detail = task_detail;
+  if (submission_info) updateFields.submission_info = submission_info;
+
+  try {
+    const result = await tasksCollection.updateOne(
+      { _id: new ObjectId(taskId) },
+      { $set: updateFields }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "Task not found." });
+    }
+
+    res.status(200).json({ message: "Task updated successfully." });
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 exports.deleteTaskById = async (req, res) => {
   const { taskId } = req.params;
   if (!ObjectId.isValid(taskId)) {
@@ -193,4 +231,3 @@ exports.deleteTaskById = async (req, res) => {
     await session.endSession();
   }
 };
-
