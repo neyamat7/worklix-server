@@ -19,4 +19,4 @@ function getDB() {
   return client.db("worklixDB");
 }
 
-module.exports = { connectDB, getDB };
+module.exports = { connectDB, getDB, client };
