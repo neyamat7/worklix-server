@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const { connectDB, getDB } = require("./db");
 const usersRoutes = require("./routes/usersRoutes");
+const buyerRoutes = require("./routes/buyerRoutes");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,6 +13,7 @@ app.use(express.json());
 
 connectDB().then(() => {
   app.use("/users", usersRoutes);
+  app.use("/buyer", buyerRoutes);
 
   app.get("/", (req, res) => res.send("Server start"));
 
