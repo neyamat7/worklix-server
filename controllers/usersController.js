@@ -4,34 +4,43 @@ const usersCollection = getDB().collection("users");
 
 exports.createUser = async (req, res) => {
   try {
-    const { email, role } = req.body;
+    const { name, email, photoURL, coins, role } = req.body;
 
-    if (!email || !role) {
-      return res.status(400).json({ message: "Email and role are required." });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
     }
 
-    // Check if user exists
+    // Check if the user already exists
     const existingUser = await usersCollection.findOne({ email });
 
     if (existingUser) {
+      // User already exists; send 200 OK
       return res.status(200).json({ message: "User already exists." });
     }
 
-    // Insert new user
+    // If no role/coins provided, set defaults
+    const userRole = role || "worker";
+    const userCoins = coins ?? 10;
+
     const now = new Date();
     const newUser = {
+      name,
       email,
-      role,
-      create_at: now,
-      last_log_in: now,
+      photoURL,
+      role: userRole,
+      coins: userCoins,
+      created_at: now,
     };
 
     const result = await usersCollection.insertOne(newUser);
 
-    res.send(result);
+    return res.status(201).json({
+      message: "User created successfully.",
+      insertedId: result.insertedId,
+    });
   } catch (error) {
     console.error("Error creating user:", error);
-    res.status(500).json({ message: "Internal server error." });
+    return res.status(500).json({ message: "Internal server error." });
   }
 };
 
@@ -63,7 +72,9 @@ exports.getUserRole = async (req, res) => {
     if (!email) {
       return res
         .status(400)
-        .json({ message: "Email query parameter is required." });
+        .json({
+          message: "Email query parameter is required to get user role",
+        });
     }
 
     const user = await usersCollection.findOne(

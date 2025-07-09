@@ -13,8 +13,6 @@ app.use(express.json());
 connectDB().then(() => {
   app.use("/users", usersRoutes);
 
-  app.get("/hlw", (req, res) => res.send("Server hlw"));
-
   app.get("/", (req, res) => res.send("Server start"));
 
   app.listen(port, () => console.log(`Server is running on ${port}`));
