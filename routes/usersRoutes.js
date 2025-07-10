@@ -3,8 +3,9 @@ const router = express.Router();
 const usersController = require("../controllers/usersController");
 
 router.post("/", usersController.createUser);
-router.get("/search", usersController.getUserByEmail);
+// router.get("/search", usersController.searchUserByEmail);
+router.get("/single-user", usersController.getUserByExactEmail);
 router.get("/role", usersController.getUserRole);
-router.patch("/:id/role", usersController.updateUserRole);
+// router.patch("/:id/role", usersController.updateUserRole);
 
 module.exports = router;

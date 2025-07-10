@@ -44,7 +44,7 @@ exports.createUser = async (req, res) => {
   }
 };
 
-exports.getUserByEmail = async (req, res) => {
+exports.searchUserByEmail = async (req, res) => {
   try {
     const { email } = req.query;
     if (!email)
@@ -65,16 +65,40 @@ exports.getUserByEmail = async (req, res) => {
   }
 };
 
-exports.getUserRole = async (req, res) => {
+exports.getUserByExactEmail = async (req, res) => {
   try {
     const { email } = req.query;
 
     if (!email) {
       return res
         .status(400)
-        .json({
-          message: "Email query parameter is required to get user role",
-        });
+        .json({ message: "Email query parameter is required." });
+    }
+
+    // Do an exact match (case-insensitive)
+    const user = await usersCollection.findOne({
+      email: { $regex: `^${email}$`, $options: "i" },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching user by email:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+exports.getUserRole = async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email query parameter is required to get user role",
+      });
     }
 
     const user = await usersCollection.findOne(
