@@ -46,3 +46,33 @@ exports.saveSubmissiosData = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+
+exports.checkSubmissionExists = async (req, res) => {
+  const { worker_email, task_id } = req.query;
+
+  // Validate
+  if (!worker_email || !task_id) {
+    return res.status(400).json({
+      message: "worker_email and task_id are required.",
+    });
+  }
+
+  try {
+    // If you stored task_id as ObjectId:
+    const query = {
+      worker_email,
+      task_id: ObjectId.isValid(task_id) ? new ObjectId(task_id) : task_id,
+    };
+
+    const existing = await submissionsCollection.findOne(query);
+
+    return res.json({
+      alreadySubmitted: !!existing,
+    });
+  } catch (error) {
+    console.error("Error checking submission existence:", error);
+    res.status(500).json({
+      message: "Internal server error.",
+    });
+  }
+};
