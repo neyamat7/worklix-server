@@ -10,6 +10,7 @@ exports.addNewTask = async (req, res) => {
   try {
     const {
       buyer_email,
+      buyer_name,
       task_title,
       task_detail,
       required_workers,
@@ -27,7 +28,9 @@ exports.addNewTask = async (req, res) => {
       !required_workers ||
       !payable_amount ||
       !completion_date ||
-      !submission_info
+      !submission_info ||
+      !task_image_url ||
+      !buyer_name
     ) {
       return res.status(400).json({ message: "All fields are required." });
     }
@@ -66,6 +69,7 @@ exports.addNewTask = async (req, res) => {
       const now = new Date();
       const newTask = {
         buyer_email,
+        buyer_name,
         task_title,
         task_detail,
         task_image_url: task_image_url || "",

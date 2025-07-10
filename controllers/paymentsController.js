@@ -32,8 +32,7 @@ exports.createPaymentIntent = async (req, res) => {
   }
 };
 
-// paymentsController.js
-
+// userd route ***
 exports.recordPaymentAndUpdateCoins = async (req, res) => {
   try {
     const {
@@ -96,8 +95,7 @@ exports.recordPaymentAndUpdateCoins = async (req, res) => {
   }
 };
 
-// paymentsController.js
-
+// used route****
 exports.getPaymentRecordsByEmail = async (req, res) => {
   const db = getDB();
   const paymentsCollection = db.collection("payments");
