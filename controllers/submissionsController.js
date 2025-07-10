@@ -76,3 +76,39 @@ exports.checkSubmissionExists = async (req, res) => {
     });
   }
 };
+
+exports.getSubmissionsPaginated = async (req, res) => {
+  try {
+    const { worker_email, page = 1 } = req.query;
+
+    // Validate required worker_email
+    if (!worker_email) {
+      return res.status(400).json({ message: "worker_email is required." });
+    }
+
+    const pageSize = 10;
+    const skip = (parseInt(page) - 1) * pageSize;
+
+    const query = { worker_email };
+
+    const totalCount = await submissionsCollection.countDocuments(query);
+
+    const submissions = await submissionsCollection
+      .find(query)
+      .sort({ submission_date: -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .toArray();
+
+    res.json({
+      submissions,
+      totalCount,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(totalCount / pageSize),
+      pageSize,
+    });
+  } catch (error) {
+    console.error("Error fetching paginated submissions:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
