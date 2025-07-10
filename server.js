@@ -6,6 +6,7 @@ const usersRoutes = require("./routes/usersRoutes");
 const buyerRoutes = require("./routes/buyerRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const workerRoutes = require("./routes/workerRoutes");
+const submissionsRoutes = require("./routes/submissionsRoutes");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ connectDB().then(() => {
   app.use("/buyer", buyerRoutes);
   app.use("/payments", paymentRoutes);
   app.use("/worker", workerRoutes);
+  app.use("/submissions", submissionsRoutes);
 
   app.get("/", (req, res) => res.send("Server start"));
 
