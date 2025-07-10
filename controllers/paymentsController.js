@@ -96,6 +96,31 @@ exports.recordPaymentAndUpdateCoins = async (req, res) => {
   }
 };
 
+// paymentsController.js
+
+exports.getPaymentRecordsByEmail = async (req, res) => {
+  const db = getDB();
+  const paymentsCollection = db.collection("payments");
+
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+
+    const payments = await paymentsCollection
+      .find({ user_email: email })
+      .sort({ payment_date: -1 }) // Newest first
+      .toArray();
+
+    res.json(payments);
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 // exports.savePayment = async (req, res) => {
 //   const { paymentIntentId, paymentMethod, parcelId, userEmail, amount } =
 //     req.body;

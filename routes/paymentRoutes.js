@@ -10,5 +10,6 @@ const paymentController = require("../controllers/paymentsController");
 router.post("/create-payment-intent", paymentController.createPaymentIntent);
 
 router.post("/record", paymentController.recordPaymentAndUpdateCoins);
+router.get("/records", paymentController.getPaymentRecordsByEmail);
 
 module.exports = router;
