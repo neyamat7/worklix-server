@@ -112,3 +112,25 @@ exports.getSubmissionsPaginated = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+
+exports.getPendingSubmissions = async (req, res) => {
+  try {
+    const { buyer_email } = req.query;
+
+    // Validate required buyer_email
+    if (!buyer_email) {
+      return res.status(400).json({ message: "buyer_email is required." });
+    }
+
+    const query = { buyer_email, status: "pending" };
+
+    const pendingSubmissions = await submissionsCollection
+      .find(query)
+      .toArray();
+
+    res.send(pendingSubmissions);
+  } catch (error) {
+    console.error("Error fetching pending submissions:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
