@@ -205,7 +205,7 @@ exports.getPendingSubmissions = async (req, res) => {
 
 exports.approveSubmission = async (req, res) => {
   const submissionId = req.params.id;
-  const { worker_email, payable_amount, task_id } = req.body;
+  const { worker_email, payable_amount, task_id, buyer_email } = req.body;
 
   // Validate
   if (!ObjectId.isValid(submissionId)) {
@@ -246,12 +246,38 @@ exports.approveSubmission = async (req, res) => {
       // 3️⃣ Increment total_paid_amount for the task
       const taskUpdate = await tasksCollection.updateOne(
         { _id: new ObjectId(task_id) },
-        { $inc: { total_paid_amount: payable_amount } },
+        { $inc: { total_paid_amount: payable_amount, total_paid_workers: 1 } },
         { session }
       );
 
       if (taskUpdate.matchedCount === 0) {
         throw new Error("Task not found.");
+      }
+      const task = await tasksCollection.findOne(
+        { _id: new ObjectId(task_id) },
+        { session }
+      );
+      if (!task) {
+        throw new Error("Task not found.");
+      }
+
+      if (task.required_workers <= 0) {
+        await tasksCollection.updateOne(
+          { _id: new ObjectId(task_id) },
+          { $set: { status: "completed" } },
+          { session }
+        );
+      }
+
+      // 4️⃣ Decrement buyer's coins
+      const buyerUpdate = await usersCollection.updateOne(
+        { email: buyer_email, role: "buyer" },
+        { $inc: { coins: -payable_amount } },
+        { session }
+      );
+
+      if (buyerUpdate.matchedCount === 0) {
+        throw new Error("Buyer not found.");
       }
     });
 
