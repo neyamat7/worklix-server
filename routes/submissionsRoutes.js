@@ -13,4 +13,7 @@ router.get("/pending-submissions", submissionController.getPendingSubmissions);
 // approve submission
 router.patch("/:id/approve", submissionController.approveSubmission);
 
+// reject submission
+router.patch("/:id/reject", submissionController.rejectSubmission);
+
 module.exports = router;

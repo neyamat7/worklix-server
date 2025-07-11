@@ -291,3 +291,53 @@ exports.approveSubmission = async (req, res) => {
     await session.endSession();
   }
 };
+
+exports.rejectSubmission = async (req, res) => {
+  const submissionId = req.params.id;
+  const { task_id } = req.body;
+
+  // Validation
+  if (!ObjectId.isValid(submissionId)) {
+    return res.status(400).json({ message: "Invalid submission ID." });
+  }
+  if (!ObjectId.isValid(task_id)) {
+    return res.status(400).json({ message: "Invalid task ID." });
+  }
+
+  const session = client.startSession();
+
+  try {
+    await session.withTransaction(async () => {
+      // 1️⃣ Update submission status to "rejected"
+      const submissionUpdate = await submissionsCollection.updateOne(
+        { _id: new ObjectId(submissionId) },
+        { $set: { status: "rejected" } },
+        { session }
+      );
+
+      if (submissionUpdate.matchedCount === 0) {
+        throw new Error("Submission not found.");
+      }
+
+      // 2️⃣ Increment required_workers by 1
+      const taskUpdate = await tasksCollection.updateOne(
+        { _id: new ObjectId(task_id) },
+        { $inc: { required_workers: 1 } },
+        { session }
+      );
+
+      if (taskUpdate.matchedCount === 0) {
+        throw new Error("Task not found.");
+      }
+    });
+
+    res.json({ message: "Submission rejected and task updated successfully." });
+  } catch (error) {
+    console.error("Error rejecting submission:", error);
+    res
+      .status(500)
+      .json({ message: error.message || "Internal server error." });
+  } finally {
+    await session.endSession();
+  }
+};

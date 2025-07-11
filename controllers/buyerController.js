@@ -121,7 +121,7 @@ exports.getTasksByBuyerEmail = async (req, res) => {
 
     const tasks = await tasksCollection
       .find({ buyer_email: email })
-      .sort({ completion_date: -1 }) // Descending
+      .sort({ completion_date: 1 }) // Descending
       .toArray();
 
     res.json(tasks);
