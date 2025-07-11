@@ -5,7 +5,7 @@ const usersCollection = getDB().collection("users");
 // used route
 exports.createUser = async (req, res) => {
   try {
-    const { name, email, photoURL, coins, role } = req.body;
+    const { name, email, photoURL, coins, role, uid } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: "Email is required." });
@@ -30,6 +30,7 @@ exports.createUser = async (req, res) => {
       photoURL,
       role: userRole,
       coins: userCoins,
+      uid,
       created_at: now,
     };
 
@@ -67,6 +68,7 @@ exports.searchUserByEmail = async (req, res) => {
 };
 
 //used route
+// get user by exact email
 exports.getUserByExactEmail = async (req, res) => {
   try {
     const { email } = req.query;
@@ -169,5 +171,49 @@ exports.updateUserRole = async (req, res) => {
   } catch (error) {
     console.error("Error updating user role:", error);
     res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+// used route
+// delete usre from database and from firebase
+
+const admin = require("../firebase");
+
+exports.deleteUser = async (req, res) => {
+  const userId = req.params.id;
+
+  // Validate
+  if (!ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid user ID." });
+  }
+
+  try {
+    // 1️⃣ Find the user in MongoDB (to get firebase_uid)
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (!user.uid) {
+      return res
+        .status(400)
+        .json({ message: "Cannot delete user: firebase_uid missing." });
+    }
+
+    // 2️⃣ Delete from Firebase
+    await admin.auth().deleteUser(user.uid);
+
+    // 3️⃣ Delete from MongoDB
+    await usersCollection.deleteOne({ _id: new ObjectId(userId) });
+
+    res.json({
+      message: "User deleted successfully from database and Firebase.",
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res
+      .status(500)
+      .json({ message: error.message || "Internal server error." });
   }
 };

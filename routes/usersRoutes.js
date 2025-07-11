@@ -15,4 +15,7 @@ router.get("/role", usersController.getUserRole);
 // update user role
 router.patch("/:id/role", usersController.updateUserRole);
 
+// delete user
+router.delete("/:id/delete", usersController.deleteUser);
+
 module.exports = router;

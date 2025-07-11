@@ -1,8 +1,12 @@
-var admin = require("firebase-admin");
-var serviceAccount = require("./courier-project-firebase-service-account-key.json");
+// /firebase.js
+const admin = require("firebase-admin");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+const serviceAccount = require("./firebase-admin-service-key-worklix.json");
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 module.exports = admin;
