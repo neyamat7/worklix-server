@@ -2,6 +2,7 @@ const { ObjectId } = require("mongodb");
 const { getDB } = require("../db");
 const usersCollection = getDB().collection("users");
 
+// used route
 exports.createUser = async (req, res) => {
   try {
     const { name, email, photoURL, coins, role } = req.body;
@@ -65,6 +66,7 @@ exports.searchUserByEmail = async (req, res) => {
   }
 };
 
+//used route
 exports.getUserByExactEmail = async (req, res) => {
   try {
     const { email } = req.query;
@@ -91,6 +93,25 @@ exports.getUserByExactEmail = async (req, res) => {
   }
 };
 
+// used route
+// get all user's data
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    // You could optionally restrict this to admin only with a middleware
+    const users = await usersCollection
+      .find({})
+      .sort({ created_at: -1 }) // newest users first
+      .toArray();
+
+    res.send(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+// used route
 exports.getUserRole = async (req, res) => {
   try {
     const { email } = req.query;
