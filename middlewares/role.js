@@ -66,4 +66,12 @@ function verifyRider() {
   };
 }
 
+// will use this for admin
+const requireAdmin = (req, res, next) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Forbidden." });
+  }
+  next();
+};
+
 module.exports = { verifyAdmin, verifyRider };

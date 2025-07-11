@@ -11,6 +11,8 @@ router.get("/", usersController.getAllUsers);
 router.get("/single-user", usersController.getUserByExactEmail);
 
 router.get("/role", usersController.getUserRole);
-// router.patch("/:id/role", usersController.updateUserRole);
+
+// update user role
+router.patch("/:id/role", usersController.updateUserRole);
 
 module.exports = router;

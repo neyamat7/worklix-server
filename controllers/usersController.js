@@ -138,17 +138,26 @@ exports.getUserRole = async (req, res) => {
   }
 };
 
+// used route
+// update user role
 exports.updateUserRole = async (req, res) => {
+  const userId = req.params.id;
+  const { role } = req.body;
+
+  // Validate
+  if (!ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid user ID." });
+  }
+
+  if (!role || !["worker", "buyer", "admin"].includes(role)) {
+    return res.status(400).json({
+      message: "Role is required and must be one of: worker, buyer, admin.",
+    });
+  }
+
   try {
-    const { id } = req.params;
-    const { role } = req.body;
-
-    if (!["user", "admin"].includes(role)) {
-      return res.status(400).json({ message: "Invalid role." });
-    }
-
     const result = await usersCollection.updateOne(
-      { _id: new ObjectId(id) },
+      { _id: new ObjectId(userId) },
       { $set: { role } }
     );
 
@@ -156,9 +165,9 @@ exports.updateUserRole = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    res.json({ message: "Role updated successfully." });
+    res.json({ message: "User role updated successfully." });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error updating user role:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
