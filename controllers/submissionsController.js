@@ -4,6 +4,7 @@ const db = getDB();
 const submissionsCollection = db.collection("submissions");
 const tasksCollection = db.collection("tasks");
 const usersCollection = db.collection("users");
+const notificationsCollection = db.collection("notifications");
 
 // Create a submission
 // exports.saveSubmissiosData = async (req, res) => {
@@ -100,6 +101,16 @@ exports.saveSubmissionsData = async (req, res) => {
         // If no task matched (already 0 workers), abort
         throw new Error("No available workers remaining for this task.");
       }
+
+      await notificationsCollection.insertOne(
+        {
+          message: `${submission.worker_name} has submitted work for '${submission.task_title}' task.`,
+          toEmail: submission.buyer_email,
+          actionRoute: "/dashboard",
+          time: new Date(),
+        },
+        { session }
+      );
     });
 
     res.status(201).json({
@@ -279,6 +290,17 @@ exports.approveSubmission = async (req, res) => {
       if (buyerUpdate.matchedCount === 0) {
         throw new Error("Buyer not found.");
       }
+
+      // add notification for worker
+      await notificationsCollection.insertOne(
+        {
+          message: `You have earned ${payable_amount} coins from ${task.buyer_name} for completing '${task.task_title}' task.`,
+          toEmail: worker_email,
+          actionRoute: "/dashboard",
+          time: new Date(),
+        },
+        { session }
+      );
     });
 
     res.json({ message: "Submission approved and worker paid successfully." });
@@ -294,7 +316,7 @@ exports.approveSubmission = async (req, res) => {
 
 exports.rejectSubmission = async (req, res) => {
   const submissionId = req.params.id;
-  const { task_id } = req.body;
+  const { task_id, buyer_name, worker_email, task_title } = req.body;
 
   // Validation
   if (!ObjectId.isValid(submissionId)) {
@@ -329,6 +351,17 @@ exports.rejectSubmission = async (req, res) => {
       if (taskUpdate.matchedCount === 0) {
         throw new Error("Task not found.");
       }
+
+      // add notification for worker
+      await notificationsCollection.insertOne(
+        {
+          message: `Your submission for ${task_title} has been rejected by ${buyer_name}.`,
+          toEmail: worker_email,
+          actionRoute: "/dashboard",
+          time: new Date(),
+        },
+        { session }
+      );
     });
 
     res.json({ message: "Submission rejected and task updated successfully." });

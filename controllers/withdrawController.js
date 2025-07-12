@@ -3,6 +3,7 @@ const { getDB, client } = require("../db");
 const db = getDB();
 const withdrawCollection = db.collection("withdraw");
 const usersCollection = db.collection("users");
+const notificationsCollection = db.collection("notifications");
 
 exports.requestWithdrawal = async (req, res) => {
   const withdrawal = req.body;
@@ -107,24 +108,59 @@ exports.getPendingWithdrawals = async (req, res) => {
 // used: approve withdrawal request
 exports.approveWithdrawal = async (req, res) => {
   const withdrawalId = req.params.id;
+  const { withdrawal_amount, worker_email } = req.body;
+  console.log(
+    "Approving withdrawal:",
+    withdrawalId,
+    withdrawal_amount,
+    worker_email
+  );
 
   if (!ObjectId.isValid(withdrawalId)) {
     return res.status(400).json({ message: "Invalid withdrawal ID." });
   }
 
+  const session = client.startSession();
+
   try {
+    // Start the transaction
+    session.startTransaction();
+
+    // Update withdrawal status
     const result = await withdrawCollection.updateOne(
       { _id: new ObjectId(withdrawalId) },
-      { $set: { status: "approved" } }
+      { $set: { status: "approved" } },
+      { session }
     );
 
     if (result.matchedCount === 0) {
+      // Abort transaction if withdrawal not found
+      await session.abortTransaction();
       return res.status(404).json({ message: "Withdrawal not found." });
     }
 
+    // Insert notification
+    await notificationsCollection.insertOne(
+      {
+        message: `Your withdrawal request of ${withdrawal_amount} has been approved.`,
+        toEmail: worker_email,
+        actionRoute: "/dashboard",
+        time: new Date(),
+        status: "success",
+      },
+      { session }
+    );
+
+    // Commit the transaction
+    await session.commitTransaction();
+
     res.json({ message: "Withdrawal status updated to approved." });
   } catch (error) {
-    console.error("Error updating withdrawal status:", error);
+    console.error("Error approving withdrawal:", error);
+    // Abort in case of error
+    await session.abortTransaction();
     res.status(500).json({ message: "Internal server error." });
+  } finally {
+    await session.endSession();
   }
 };

@@ -9,6 +9,7 @@ const workerRoutes = require("./routes/workerRoutes");
 const submissionsRoutes = require("./routes/submissionsRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const withdrawRoutes = require("./routes/withdrawRoutes");
+const notificationsRoutes = require("./routes/notificationsRoutes");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -24,6 +25,7 @@ connectDB().then(() => {
   app.use("/submissions", submissionsRoutes);
   app.use("/admin", adminRoutes);
   app.use("/withdraw", withdrawRoutes);
+  app.use("/notifications", notificationsRoutes);
 
   app.get("/", (req, res) => res.send("Server start"));
 
