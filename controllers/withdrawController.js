@@ -88,3 +88,18 @@ exports.requestWithdrawal = async (req, res) => {
     await session.endSession();
   }
 };
+
+// used get all withdrawal requests for admin
+exports.getPendingWithdrawals = async (req, res) => {
+  try {
+    const withdrawals = await withdrawCollection
+      .find({ status: "pending" })
+      .sort({ withdraw_date: -1 }) // newest first
+      .toArray();
+
+    res.send(withdrawals);
+  } catch (error) {
+    console.error("Error fetching pending withdrawals:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};

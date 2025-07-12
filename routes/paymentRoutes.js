@@ -11,5 +11,6 @@ router.post("/create-payment-intent", paymentController.createPaymentIntent);
 
 router.post("/record", paymentController.recordPaymentAndUpdateCoins);
 router.get("/records", paymentController.getPaymentRecordsByEmail);
+router.get("/total-payments", paymentController.getTotalPayments);
 
 module.exports = router;

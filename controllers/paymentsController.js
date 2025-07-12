@@ -4,7 +4,7 @@ const paymentsCollection = getDB().collection("payments");
 const stripe = require("stripe")(process.env.PAYMENT_GATEWAY_KEY);
 const usersCollection = getDB().collection("users");
 
-// used ****
+// used **** create payments intent
 exports.createPaymentIntent = async (req, res) => {
   try {
     const { amount, currency, coins } = req.body;
@@ -115,6 +115,32 @@ exports.getPaymentRecordsByEmail = async (req, res) => {
     res.json(payments);
   } catch (error) {
     console.error("Error fetching payments:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+// userd get all payments for admin;
+exports.getTotalPayments = async (req, res) => {
+  try {
+    const pipeline = [
+      { $match: { status: "succeeded" } },
+      {
+        $group: {
+          _id: null,
+          totalCents: { $sum: "$amount_paid" },
+        },
+      },
+    ];
+
+    const cursor = paymentsCollection.aggregate(pipeline);
+    const result = await cursor.next();
+
+    const totalCents = result?.totalCents || 0;
+    const totalPaymentsInDollars = totalCents / 100;
+
+    res.send(totalPaymentsInDollars);
+  } catch (error) {
+    console.error("Error fetching total USD:", error);
     res.status(500).json({ message: "Internal server error." });
   }
 };
