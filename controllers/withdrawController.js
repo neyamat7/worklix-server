@@ -103,3 +103,28 @@ exports.getPendingWithdrawals = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+
+// used: approve withdrawal request
+exports.approveWithdrawal = async (req, res) => {
+  const withdrawalId = req.params.id;
+
+  if (!ObjectId.isValid(withdrawalId)) {
+    return res.status(400).json({ message: "Invalid withdrawal ID." });
+  }
+
+  try {
+    const result = await withdrawCollection.updateOne(
+      { _id: new ObjectId(withdrawalId) },
+      { $set: { status: "approved" } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "Withdrawal not found." });
+    }
+
+    res.json({ message: "Withdrawal status updated to approved." });
+  } catch (error) {
+    console.error("Error updating withdrawal status:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
