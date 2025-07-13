@@ -1,24 +1,49 @@
 const express = require("express");
 const router = express.Router();
 const usersController = require("../controllers/usersController");
+const {
+  verifyFirebaseToken,
+  verifyTokenEmail,
+} = require("../middlewares/auth");
+const { verifyAdmin } = require("../middlewares/role");
 
 router.post("/", usersController.createUser);
 // router.get("/search", usersController.searchUserByEmail);
 
 // get all users
-router.get("/", usersController.getAllUsers);
+router.get(
+  "/",
+  verifyFirebaseToken,
+  verifyAdmin(),
+  usersController.getAllUsers
+);
 
-router.get("/single-user", usersController.getUserByExactEmail);
+router.get(
+  "/single-user",
+  verifyFirebaseToken,
+  verifyTokenEmail,
+  usersController.getUserByExactEmail
+);
 
-router.get("/role", usersController.getUserRole);
+router.get("/role", verifyFirebaseToken, usersController.getUserRole);
 
 // Get top workers
 router.get("/top-workers", usersController.getTopWorkers);
 
 // update user role
-router.patch("/:id/role", usersController.updateUserRole);
+router.patch(
+  "/:id/role",
+  verifyFirebaseToken,
+  verifyAdmin(),
+  usersController.updateUserRole
+);
 
 // delete user
-router.delete("/:id/delete", usersController.deleteUser);
+router.delete(
+  "/:id/delete",
+  verifyFirebaseToken,
+  verifyAdmin(),
+  usersController.deleteUser
+);
 
 module.exports = router;

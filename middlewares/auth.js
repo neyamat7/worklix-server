@@ -10,6 +10,7 @@ const verifyFirebaseToken = async (req, res, next) => {
   console.log("authHeader found, proceeding with token verification");
 
   const token = authHeader.split(" ")[1];
+  console.log("token", token);
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
     req.decoded = decodedToken;
@@ -26,10 +27,13 @@ const verifyTokenEmail = (req, res, next) => {
   const email = req.query.email;
   console.log(email);
 
+  console.log("email checked");
+
   // If email is provided in the query, check if it matches the decoded token's email
   if (email && (!req.decoded || email !== req.decoded.email)) {
     return res.status(403).send({ error: "Forbidden access" });
   }
+  console.log("email checked pass");
   next();
 };
 

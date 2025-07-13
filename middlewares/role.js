@@ -26,7 +26,7 @@ function verifyAdmin() {
       if (user.role !== "admin") {
         return res.status(403).json({ message: "Access denied. Admins only." });
       }
-      console.log("admin verified");
+      // console.log("admin verified");
       next();
     } catch (error) {
       console.error("Error verifying admin:", error);
@@ -35,12 +35,9 @@ function verifyAdmin() {
   };
 }
 
-function verifyRider() {
+function verifyWorker() {
   return async function (req, res, next) {
     try {
-      const db = require("../db").getDB();
-      const usersCollection = db.collection("users");
-
       const email = req.decoded?.email;
 
       if (!email) {
@@ -56,11 +53,12 @@ function verifyRider() {
         return res.status(404).json({ message: "User not found." });
       }
 
-      if (user.role !== "rider") {
+      if (user.role !== "worker") {
         return res.status(403).json({ message: "Access denied. Riders only." });
       }
 
-      // ✅ Rider verified, continue
+      console.log("worker verified");
+      // ✅ worker verified, continue
       next();
     } catch (error) {
       console.error("Error verifying rider:", error);
@@ -69,12 +67,36 @@ function verifyRider() {
   };
 }
 
-// will use this for admin
-// const requireAdmin = (req, res, next) => {
-//   if (req.user?.role !== "admin") {
-//     return res.status(403).json({ message: "Forbidden." });
-//   }
-//   next();
-// };
+function verifyBuyer() {
+  return async function (req, res, next) {
+    try {
+      const email = req.decoded?.email;
 
-module.exports = { verifyAdmin, verifyRider };
+      if (!email) {
+        return res.status(401).json({ message: "Email not found in token." });
+      }
+
+      const user = await usersCollection.findOne(
+        { email },
+        { projection: { role: 1 } }
+      );
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      if (user.role !== "buyer") {
+        return res.status(403).json({ message: "Access denied. Buyers only." });
+      }
+
+      console.log("buyer verified");
+      // ✅ buyer verified, continue
+      next();
+    } catch (error) {
+      console.error("Error verifying buyer:", error);
+      res.status(500).json({ message: "Internal server error." });
+    }
+  };
+}
+
+module.exports = { verifyAdmin, verifyWorker, verifyBuyer };
