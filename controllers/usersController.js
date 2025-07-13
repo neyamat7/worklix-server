@@ -46,29 +46,49 @@ exports.createUser = async (req, res) => {
   }
 };
 
-exports.searchUserByEmail = async (req, res) => {
+// exports.searchUserByEmail = async (req, res) => {
+// //   try {
+// //     const { email } = req.query;
+// //     if (!email)
+// //       return res.status(400).json({ message: "Email query is required." });
+
+// //     const regex = new RegExp(email, "i"); // case-insensitive
+
+// //     const users = await usersCollection
+// //       .find({ email: regex })
+// //       // .project({ email: 1, role: 1, create_at: 1, last_log_in: 1 }) // Only needed fields
+// //       .limit(10)
+// //       .toArray();
+
+// //     res.json(users);
+// //   } catch (error) {
+// //     console.error(error);
+// //     res.status(500).json({ message: "Server error" });
+// //   }
+// // };
+
+// //used route
+// // get user by exact email
+
+// get top workers
+exports.getTopWorkers = async (req, res) => {
+  // Optional: allow limit from query string
+  const limit = parseInt(req.query.limit) || 6;
+
   try {
-    const { email } = req.query;
-    if (!email)
-      return res.status(400).json({ message: "Email query is required." });
-
-    const regex = new RegExp(email, "i"); // case-insensitive
-
-    const users = await usersCollection
-      .find({ email: regex })
-      // .project({ email: 1, role: 1, create_at: 1, last_log_in: 1 }) // Only needed fields
-      .limit(10)
+    const topWorkers = await usersCollection
+      .find({ role: "worker" })
+      .sort({ coins: -1 })
+      .limit(limit)
       .toArray();
 
-    res.json(users);
+    res.send(topWorkers);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error fetching top workers:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
-//used route
-// get user by exact email
 exports.getUserByExactEmail = async (req, res) => {
   try {
     const { email } = req.query;

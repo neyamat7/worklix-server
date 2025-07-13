@@ -1,10 +1,13 @@
+const { ObjectId } = require("mongodb");
+const { getDB, client } = require("../db");
+const db = getDB();
+// const tasksCollection = db.collection("tasks");
+const usersCollection = db.collection("users");
+
 // ✅ The verifyAdmin middleware defined here, in this file
 function verifyAdmin() {
   return async function (req, res, next) {
     try {
-      const db = require("../db").getDB();
-      const usersCollection = db.collection("users");
-
       const email = req.decoded?.email;
 
       if (!email) {
@@ -23,7 +26,7 @@ function verifyAdmin() {
       if (user.role !== "admin") {
         return res.status(403).json({ message: "Access denied. Admins only." });
       }
-
+      console.log("admin verified");
       next();
     } catch (error) {
       console.error("Error verifying admin:", error);
@@ -67,11 +70,11 @@ function verifyRider() {
 }
 
 // will use this for admin
-const requireAdmin = (req, res, next) => {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Forbidden." });
-  }
-  next();
-};
+// const requireAdmin = (req, res, next) => {
+//   if (req.user?.role !== "admin") {
+//     return res.status(403).json({ message: "Forbidden." });
+//   }
+//   next();
+// };
 
 module.exports = { verifyAdmin, verifyRider };

@@ -12,6 +12,7 @@ const submissionsRoutes = require("./routes/submissionsRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const withdrawRoutes = require("./routes/withdrawRoutes");
 const notificationsRoutes = require("./routes/notificationsRoutes");
+const publicRoutes = require("./routes/publicRoutes");
 
 const app = express();
 const server = http.createServer(app);
@@ -37,6 +38,7 @@ connectDB().then(() => {
   app.use("/admin", adminRoutes);
   app.use("/withdraw", withdrawRoutes);
   app.use("/notifications", notificationsRoutes);
+  app.use("/public", publicRoutes);
 
   app.get("/", (req, res) => res.send("Server start"));
 

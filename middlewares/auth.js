@@ -2,23 +2,18 @@ const admin = require("../firebase");
 
 const verifyFirebaseToken = async (req, res, next) => {
   const authHeader = req.headers?.authorization;
-  // const email = req.query.email;
-
-  // if (req.path === "/artifacts" && !email) {
-  //   req.decoded = null;
-  //   return next();
-  // }
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).send({ error: "Unauthorized access" });
   }
 
-  // console.log("authHeader found, proceeding with token verification");
+  console.log("authHeader found, proceeding with token verification");
 
   const token = authHeader.split(" ")[1];
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
     req.decoded = decodedToken;
+    console.log("Token verified:", decodedToken);
     next();
   } catch (error) {
     console.error("Error verifying Firebase token:", error);

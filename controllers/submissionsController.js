@@ -202,7 +202,7 @@ exports.getSubmissionsPaginated = async (req, res) => {
   }
 };
 
-// get worker's all subnmissions
+// not used yet
 exports.getWorkersSubmissions = async (req, res) => {
   try {
     const { worker_email } = req.query;

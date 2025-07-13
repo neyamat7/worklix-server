@@ -12,6 +12,9 @@ router.get("/single-user", usersController.getUserByExactEmail);
 
 router.get("/role", usersController.getUserRole);
 
+// Get top workers
+router.get("/top-workers", usersController.getTopWorkers);
+
 // update user role
 router.patch("/:id/role", usersController.updateUserRole);
 
