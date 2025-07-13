@@ -6,8 +6,10 @@ router.post("/", submissionController.saveSubmissionsData);
 router.get("/check-submission", submissionController.checkSubmissionExists);
 router.get("/", submissionController.getSubmissionsPaginated);
 
-// get buyer's pending submissions by buyer_email
+// get all submissions by worker_email
+router.get("/worker-submissions", submissionController.getWorkersSubmissions);
 
+// get buyer's pending submissions by buyer_email
 router.get("/pending-submissions", submissionController.getPendingSubmissions);
 
 // approve submission

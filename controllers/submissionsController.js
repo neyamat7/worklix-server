@@ -183,8 +183,14 @@ exports.getSubmissionsPaginated = async (req, res) => {
       .limit(pageSize)
       .toArray();
 
+    const allSubmissions = await submissionsCollection
+      .find(query)
+      .sort({ submission_date: -1 })
+      .toArray();
+
     res.json({
       submissions,
+      allSubmissions,
       totalCount,
       currentPage: parseInt(page),
       totalPages: Math.ceil(totalCount / pageSize),
@@ -192,6 +198,27 @@ exports.getSubmissionsPaginated = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching paginated submissions:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+// get worker's all subnmissions
+exports.getWorkersSubmissions = async (req, res) => {
+  try {
+    const { worker_email } = req.query;
+
+    // Validate required worker_email
+    if (!worker_email) {
+      return res.status(400).json({ message: "worker_email is required." });
+    }
+
+    const submissions = await submissionsCollection
+      .find({ worker_email })
+      .toArray();
+
+    res.send(submissions);
+  } catch (error) {
+    console.error("Error fetching worker's submissions:", error);
     res.status(500).json({ message: "Internal server error." });
   }
 };
