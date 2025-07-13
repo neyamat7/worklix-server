@@ -102,15 +102,19 @@ exports.saveSubmissionsData = async (req, res) => {
         throw new Error("No available workers remaining for this task.");
       }
 
-      await notificationsCollection.insertOne(
-        {
-          message: `${submission.worker_name} has submitted work for '${submission.task_title}' task.`,
-          toEmail: submission.buyer_email,
-          actionRoute: "/dashboard",
-          time: new Date(),
-        },
-        { session }
-      );
+      const notification = {
+        message: `${submission.worker_name} has submitted work for '${submission.task_title}' task.`,
+        toEmail: submission.buyer_email,
+        actionRoute: "/dashboard",
+        time: new Date(),
+        status: "success",
+      };
+
+      await notificationsCollection.insertOne(notification, { session });
+
+      // Emit real-time event
+      const io = req.app.get("io");
+      io.to(submission.buyer_email).emit("new-notification", notification);
     });
 
     res.status(201).json({
@@ -291,16 +295,19 @@ exports.approveSubmission = async (req, res) => {
         throw new Error("Buyer not found.");
       }
 
+      const notification = {
+        message: `You have earned ${payable_amount} coins from ${task.buyer_name} for completing '${task.task_title}' task.`,
+        toEmail: worker_email,
+        actionRoute: "/dashboard",
+        time: new Date(),
+        status: "success",
+      };
+
       // add notification for worker
-      await notificationsCollection.insertOne(
-        {
-          message: `You have earned ${payable_amount} coins from ${task.buyer_name} for completing '${task.task_title}' task.`,
-          toEmail: worker_email,
-          actionRoute: "/dashboard",
-          time: new Date(),
-        },
-        { session }
-      );
+      await notificationsCollection.insertOne(notification, { session });
+      // Emit real-time event
+      const io = req.app.get("io");
+      io.to(worker_email).emit("new-notification", notification);
     });
 
     res.json({ message: "Submission approved and worker paid successfully." });
@@ -353,15 +360,20 @@ exports.rejectSubmission = async (req, res) => {
       }
 
       // add notification for worker
-      await notificationsCollection.insertOne(
-        {
-          message: `Your submission for ${task_title} has been rejected by ${buyer_name}.`,
-          toEmail: worker_email,
-          actionRoute: "/dashboard",
-          time: new Date(),
-        },
-        { session }
-      );
+
+      const notification = {
+        message: `Your submission for ${task_title} has been rejected by ${buyer_name}.`,
+        toEmail: worker_email,
+        actionRoute: "/dashboard",
+        time: new Date(),
+        status: "rejected",
+      };
+
+      await notificationsCollection.insertOne(notification, { session });
+
+      // Emit real-time event
+      const io = req.app.get("io");
+      io.to(worker_email).emit("new-notification", notification);
     });
 
     res.json({ message: "Submission rejected and task updated successfully." });

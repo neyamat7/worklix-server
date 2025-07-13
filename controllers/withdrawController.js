@@ -58,7 +58,9 @@ exports.requestWithdrawal = async (req, res) => {
       // 2️⃣ Deduct coins
       await usersCollection.updateOne(
         { _id: user._id },
-        { $inc: { coins: -withdrawalCoin } },
+        {
+          $inc: { coins: -withdrawalCoin, pending_withdrawals: withdrawalCoin },
+        },
         { session }
       );
 
@@ -108,13 +110,6 @@ exports.getPendingWithdrawals = async (req, res) => {
 // used: approve withdrawal request
 exports.approveWithdrawal = async (req, res) => {
   const withdrawalId = req.params.id;
-  const { withdrawal_amount, worker_email } = req.body;
-  console.log(
-    "Approving withdrawal:",
-    withdrawalId,
-    withdrawal_amount,
-    worker_email
-  );
 
   if (!ObjectId.isValid(withdrawalId)) {
     return res.status(400).json({ message: "Invalid withdrawal ID." });
@@ -123,43 +118,61 @@ exports.approveWithdrawal = async (req, res) => {
   const session = client.startSession();
 
   try {
-    // Start the transaction
-    session.startTransaction();
+    await session.withTransaction(async () => {
+      // 1️⃣ Find the withdrawal record
+      const withdrawal = await withdrawCollection.findOne(
+        { _id: new ObjectId(withdrawalId) },
+        { session }
+      );
 
-    // Update withdrawal status
-    const result = await withdrawCollection.updateOne(
-      { _id: new ObjectId(withdrawalId) },
-      { $set: { status: "approved" } },
-      { session }
-    );
+      if (!withdrawal) {
+        throw new Error("Withdrawal not found.");
+      }
 
-    if (result.matchedCount === 0) {
-      // Abort transaction if withdrawal not found
-      await session.abortTransaction();
-      return res.status(404).json({ message: "Withdrawal not found." });
-    }
+      const { withdrawal_coin, withdrawal_amount, worker_email } = withdrawal;
 
-    // Insert notification
-    await notificationsCollection.insertOne(
-      {
+      // 2️⃣ Update withdrawal status
+      await withdrawCollection.updateOne(
+        { _id: new ObjectId(withdrawalId) },
+        { $set: { status: "approved" } },
+        { session }
+      );
+
+      // 3️⃣ Decrement user's pending withdrawals
+      const userResult = await usersCollection.updateOne(
+        { email: worker_email, role: "worker" },
+        { $inc: { pending_withdrawals: -withdrawal_coin } },
+        { session }
+      );
+
+      if (userResult.matchedCount === 0) {
+        throw new Error("Worker user not found.");
+      }
+
+      // 4️⃣ Insert notification
+
+      const notification = {
         message: `Your withdrawal request of ${withdrawal_amount} has been approved.`,
         toEmail: worker_email,
-        actionRoute: "/dashboard",
+        actionRoute: "/dashboard/worker-home",
         time: new Date(),
         status: "success",
-      },
-      { session }
-    );
+      };
+      await notificationsCollection.insertOne(notification, { session });
 
-    // Commit the transaction
-    await session.commitTransaction();
+      // Emit real-time event
+      const io = req.app.get("io");
+      io.to(worker_email).emit("new-notification", notification);
+    });
 
-    res.json({ message: "Withdrawal status updated to approved." });
+    res.json({
+      message: "Withdrawal approved and pending withdrawals decremented.",
+    });
   } catch (error) {
     console.error("Error approving withdrawal:", error);
-    // Abort in case of error
-    await session.abortTransaction();
-    res.status(500).json({ message: "Internal server error." });
+    res
+      .status(500)
+      .json({ message: error.message || "Internal server error." });
   } finally {
     await session.endSession();
   }

@@ -1,5 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 const cors = require("cors");
 const { connectDB, getDB } = require("./db");
 const usersRoutes = require("./routes/usersRoutes");
@@ -12,10 +14,19 @@ const withdrawRoutes = require("./routes/withdrawRoutes");
 const notificationsRoutes = require("./routes/notificationsRoutes");
 
 const app = express();
+const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Setup Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: "*", // For development, allow all origins
+    methods: ["GET", "POST"],
+  },
+});
 
 connectDB().then(() => {
   app.use("/users", usersRoutes);
@@ -29,5 +40,24 @@ connectDB().then(() => {
 
   app.get("/", (req, res) => res.send("Server start"));
 
-  app.listen(port, () => console.log(`Server is running on ${port}`));
+  // Listen for connections
+  io.on("connection", (socket) => {
+    console.log("✅ A user connected:", socket.id);
+
+    socket.on("join", (email) => {
+      socket.join(email);
+      console.log(`Socket ${socket.id} joined room: ${email}`);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("❌ A user disconnected:", socket.id);
+    });
+  });
+
+  // Make io accessible in your controllers
+  app.set("io", io);
+
+  server.listen(port, () =>
+    console.log(`Server with socket io is running on ${port}`)
+  );
 });
