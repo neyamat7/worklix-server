@@ -27,9 +27,6 @@ router.get(
 
 router.get("/role", verifyFirebaseToken, usersController.getUserRole);
 
-// Get top workers
-router.get("/top-workers", usersController.getTopWorkers);
-
 // update user role
 router.patch(
   "/:id/role",
