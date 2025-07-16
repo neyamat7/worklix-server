@@ -25,7 +25,7 @@ const verifyFirebaseToken = async (req, res, next) => {
 // verify token email
 const verifyTokenEmail = (req, res, next) => {
   const email = req.query.email;
-  console.log(email);
+  // console.log(email);
 
   // console.log("email checked");
 
