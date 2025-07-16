@@ -56,7 +56,7 @@ exports.addNewTask = async (req, res) => {
         await session.abortTransaction();
         return res.status(404).json({ message: "Buyer not found." });
       }
-      console.log("Incoming request body:", req.body);
+      // console.log("Incoming request body:", req.body);
 
       if (buyer.coins < totalPayableAmount) {
         await session.abortTransaction();

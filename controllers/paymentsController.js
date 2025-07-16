@@ -8,7 +8,7 @@ const usersCollection = getDB().collection("users");
 exports.createPaymentIntent = async (req, res) => {
   try {
     const { amount, currency, coins } = req.body;
-    console.log("Received body:", req.body);
+    // console.log("Received body:", req.body);
 
     // Create and confirm payment intent in one step
     const paymentIntent = await stripe.paymentIntents.create({

@@ -57,7 +57,7 @@ function verifyWorker() {
         return res.status(403).json({ message: "Access denied. Riders only." });
       }
 
-      console.log("worker verified");
+      // console.log("worker verified");
       // ✅ worker verified, continue
       next();
     } catch (error) {
@@ -89,7 +89,7 @@ function verifyBuyer() {
         return res.status(403).json({ message: "Access denied. Buyers only." });
       }
 
-      console.log("buyer verified");
+      // console.log("buyer verified");
       // ✅ buyer verified, continue
       next();
     } catch (error) {
