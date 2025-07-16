@@ -10,13 +10,13 @@ const client = new MongoClient(uri, {
   },
 });
 
-async function connectDB() {
-  await client.connect();
-  console.log("Connected to MongoDB");
-}
+// async function connectDB() {
+//   await client.connect();
+//   console.log("Connected to MongoDB");
+// }
 
 function getDB() {
   return client.db("worklixDB");
 }
 
-module.exports = { connectDB, getDB, client };
+module.exports = { getDB, client };

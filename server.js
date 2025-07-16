@@ -3,7 +3,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
-const { connectDB, getDB } = require("./db");
+const { getDB } = require("./db");
 const usersRoutes = require("./routes/usersRoutes");
 const buyerRoutes = require("./routes/buyerRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
@@ -29,37 +29,37 @@ const io = new Server(server, {
   },
 });
 
-connectDB().then(() => {
-  app.use("/users", usersRoutes);
-  app.use("/buyer", buyerRoutes);
-  app.use("/payments", paymentRoutes);
-  app.use("/worker", workerRoutes);
-  app.use("/submissions", submissionsRoutes);
-  app.use("/admin", adminRoutes);
-  app.use("/withdraw", withdrawRoutes);
-  app.use("/notifications", notificationsRoutes);
-  app.use("/public", publicRoutes);
+// connectDB().then(() => {
+app.use("/users", usersRoutes);
+app.use("/buyer", buyerRoutes);
+app.use("/payments", paymentRoutes);
+app.use("/worker", workerRoutes);
+app.use("/submissions", submissionsRoutes);
+app.use("/admin", adminRoutes);
+app.use("/withdraw", withdrawRoutes);
+app.use("/notifications", notificationsRoutes);
+app.use("/public", publicRoutes);
 
-  app.get("/", (req, res) => res.send("Server start"));
+app.get("/", (req, res) => res.send("Server start"));
 
-  // Listen for connections
-  io.on("connection", (socket) => {
-    console.log("✅ A user connected:", socket.id);
+// Listen for connections
+io.on("connection", (socket) => {
+  // console.log("✅ A user connected:", socket.id);
 
-    socket.on("join", (email) => {
-      socket.join(email);
-      console.log(`Socket ${socket.id} joined room: ${email}`);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("❌ A user disconnected:", socket.id);
-    });
+  socket.on("join", (email) => {
+    socket.join(email);
+    // console.log(`Socket ${socket.id} joined room: ${email}`);
   });
 
-  // Make io accessible in your controllers
-  app.set("io", io);
-
-  server.listen(port, () =>
-    console.log(`Server with socket io is running on ${port}`)
-  );
+  // socket.on("disconnect", () => {
+  //   // console.log("❌ A user disconnected:", socket.id);
+  // });
 });
+
+// Make io accessible in your controllers
+app.set("io", io);
+
+server.listen(port, () =>
+  console.log(`Server with socket io is running on ${port}`)
+);
+// });
