@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const { getDB } = require("../db");
 const usersCollection = getDB().collection("users");
+const tasksCollection = getDB().collection("tasks");
 
 // used route
 exports.createUser = async (req, res) => {
@@ -45,9 +46,6 @@ exports.createUser = async (req, res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 };
-
- 
-
 
 exports.getUserByExactEmail = async (req, res) => {
   try {
@@ -195,5 +193,62 @@ exports.deleteUser = async (req, res) => {
     res
       .status(500)
       .json({ message: error.message || "Internal server error." });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  const userId = req.params.id;
+
+  if (!ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid user ID." });
+  }
+
+  const session = client.startSession();
+
+  try {
+    await session.withTransaction(async () => {
+      // 1️⃣ Find the user
+      const user = await usersCollection.findOne(
+        { _id: new ObjectId(userId) },
+        { session }
+      );
+
+      if (!user) {
+        throw new Error("User not found.");
+      }
+
+      if (!user.uid) {
+        throw new Error("Cannot delete user: firebase_uid missing.");
+      }
+
+      const buyerEmail = user.email;
+
+      // 2️⃣ Delete user from Firebase
+      await admin.auth().deleteUser(user.uid);
+
+      // 3️⃣ Delete user from MongoDB
+      await usersCollection.deleteOne(
+        { _id: new ObjectId(userId) },
+        { session }
+      );
+
+      // 4️⃣ Deactivate all their active tasks
+      await tasksCollection.updateMany(
+        { buyer_email: buyerEmail, status: "active" },
+        { $set: { status: "inActive" } },
+        { session }
+      );
+    });
+
+    res.json({
+      message: "User deleted, Firebase account removed, and tasks deactivated.",
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res
+      .status(500)
+      .json({ message: error.message || "Internal server error." });
+  } finally {
+    await session.endSession();
   }
 };
