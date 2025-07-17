@@ -6,10 +6,7 @@ const {
   verifyTokenEmail,
 } = require("../middlewares/auth");
 const { verifyBuyer, verifyAdmin } = require("../middlewares/role");
-// const {
-//   verifyFirebaseToken,
-//   verifyTokenEmail,
-// } = require("../middlewares/auth");
+ 
 
 // 🟢 Create payment intent
 router.post(
