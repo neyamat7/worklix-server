@@ -3,14 +3,35 @@ const { getDB, client } = require("../db");
 const db = getDB();
 const tasksCollection = db.collection("tasks");
 const usersCollection = db.collection("users");
+const submissionsCollection = db.collection("submissions");
 
-// used route
 // get all tasks for admin
 exports.getAllTasks = async (req, res) => {
   try {
     const tasks = await tasksCollection
-      .find({})
-      .sort({ created_at: -1 })
+      .aggregate([
+        {
+          $lookup: {
+            from: "users",
+            localField: "buyer_email",
+            foreignField: "email",
+            as: "buyer_info",
+          },
+        },
+        {
+          $match: {
+            buyer_info: { $ne: [] },
+          },
+        },
+        {
+          $sort: { created_at: -1 },
+        },
+        {
+          $project: {
+            buyer_info: 0,
+          },
+        },
+      ])
       .toArray();
 
     res.json(tasks);
@@ -20,10 +41,10 @@ exports.getAllTasks = async (req, res) => {
   }
 };
 
-// used route
 // delete task by id
 exports.deleteTaskByAdmin = async (req, res) => {
   const taskId = req.params.id;
+  // console.log("task deleted by admin");
 
   if (!ObjectId.isValid(taskId)) {
     return res.status(400).json({ message: "Invalid task ID." });
@@ -65,8 +86,29 @@ exports.deleteTaskByAdmin = async (req, res) => {
         { session }
       );
 
+      if (deleteResult.deletedCount) {
+        console.log("task deleted by admin");
+      }
+
       if (deleteResult.deletedCount === 0) {
         throw new Error("Failed to delete task.");
+      }
+
+      // 5️⃣ delete all buyer pending submissions
+      // 5️⃣ Delete only pending submissions for this specific task
+      const deletePendingSubmissions = await submissionsCollection.deleteMany(
+        {
+          task_id: new ObjectId(task._id),
+          status: "pending",
+        },
+        { session }
+      );
+      console.log(
+        "Deleted pending submissions:",
+        deletePendingSubmissions.deletedCount
+      );
+      if (deletePendingSubmissions.deletedCount === 0) {
+        throw new Error("Failed to delete pending submissions.");
       }
     });
 

@@ -247,7 +247,14 @@ exports.getPendingSubmissions = async (req, res) => {
 
 exports.approveSubmission = async (req, res) => {
   const submissionId = req.params.id;
-  const { worker_email, payable_amount, task_id, buyer_email } = req.body;
+  const {
+    worker_email,
+    payable_amount,
+    task_id,
+    buyer_email,
+    buyer_name,
+    task_title,
+  } = req.body;
 
   // Validate
   if (!ObjectId.isValid(submissionId)) {
@@ -295,6 +302,7 @@ exports.approveSubmission = async (req, res) => {
       if (taskUpdate.matchedCount === 0) {
         throw new Error("Task not found.");
       }
+
       const task = await tasksCollection.findOne(
         { _id: new ObjectId(task_id) },
         { session }
@@ -323,7 +331,7 @@ exports.approveSubmission = async (req, res) => {
       }
 
       const notification = {
-        message: `You have earned ${payable_amount} coins from ${task.buyer_name} for completing '${task.task_title}' task.`,
+        message: `You have earned ${payable_amount} coins from ${buyer_name} for completing '${task_title}' task.`,
         toEmail: worker_email,
         actionRoute: "/dashboard",
         time: new Date(),

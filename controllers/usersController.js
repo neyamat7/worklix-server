@@ -2,6 +2,7 @@ const { ObjectId } = require("mongodb");
 const { getDB, client } = require("../db");
 const usersCollection = getDB().collection("users");
 const tasksCollection = getDB().collection("tasks");
+const submissionsCollection = getDB().collection("submissions");
 const admin = require("../firebase");
 
 //create new user
@@ -61,7 +62,7 @@ exports.getUserByExactEmail = async (req, res) => {
 
     // Do an exact match (case-insensitive)
     const user = await usersCollection.findOne({
-      email: { $regex: `^${email}$`, $options: "i" },
+      email: email.toLowerCase(),
     });
 
     if (!user) {
@@ -177,7 +178,7 @@ exports.deleteUser = async (req, res) => {
         throw new Error("Cannot delete user: firebase_uid missing.");
       }
 
-      const buyerEmail = user.email;
+      const userEmail = user.email;
 
       // 2️⃣ Delete user from Firebase
       await admin.auth().deleteUser(user.uid);
@@ -188,12 +189,13 @@ exports.deleteUser = async (req, res) => {
         { session }
       );
 
-      // 4️⃣ Deactivate all their active tasks
-      await tasksCollection.updateMany(
-        { buyer_email: buyerEmail, status: "active" },
-        { $set: { status: "inActive" } },
-        { session }
-      );
+      // 4️⃣ Delete all pending submissions by this buyer ✅ newly added
+      if (user.role === "buyer") {
+        await submissionsCollection.deleteMany(
+          { buyer_email: userEmail, status: "pending" },
+          { session }
+        );
+      }
     });
 
     res.json({
