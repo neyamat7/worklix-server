@@ -3,6 +3,7 @@ const { getDB, client } = require("../db");
 const db = getDB();
 const tasksCollection = db.collection("tasks");
 const usersCollection = db.collection("users");
+const submissionsCollection = db.collection("submissions");
 
 exports.addNewTask = async (req, res) => {
   const session = client.startSession();
@@ -203,8 +204,22 @@ exports.deleteTaskById = async (req, res) => {
 
       // 3️⃣ Calculate refill amount only if task is uncompleted
       let refillAmount = 0;
+      let pendingDeletedCount = 0;
+
+      // 3️⃣ Delete pending submissions for this task (if any)
+      const pendingDeleteResult = await submissionsCollection.deleteMany(
+        {
+          task_id: task._id,
+          status: "pending",
+        },
+        { session }
+      );
+
+      pendingDeletedCount = pendingDeleteResult.deletedCount;
+
       if (task.status === "active") {
-        refillAmount = task.required_workers * task.payable_amount;
+        refillAmount =
+          (task.required_workers + pendingDeletedCount) * task.payable_amount;
       }
 
       // 4️⃣ Delete the task
