@@ -22,12 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 // Setup Socket.IO
-const io = new Server(server, {
-  cors: {
-    origin: "*", // For development, allow all origins
-    methods: ["GET", "POST"],
-  },
-});
+const io = new Server(server);
 
 connectDB().then(() => {
   app.use("/users", usersRoutes);
