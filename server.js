@@ -18,11 +18,23 @@ const app = express();
 const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://worklix.netlify.app",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // Setup Socket.IO
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "https://worklix.netlify.app",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
 connectDB().then(() => {
   app.use("/users", usersRoutes);
