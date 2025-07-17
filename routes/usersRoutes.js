@@ -8,7 +8,6 @@ const {
 const { verifyAdmin } = require("../middlewares/role");
 
 router.post("/", usersController.createUser);
-// router.get("/search", usersController.searchUserByEmail);
 
 // get all users
 router.get(
