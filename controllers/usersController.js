@@ -79,9 +79,8 @@ exports.getUserByExactEmail = async (req, res) => {
 // get all user's data
 exports.getAllUsers = async (req, res) => {
   try {
-    // You could optionally restrict this to admin only with a middleware
     const users = await usersCollection
-      .find({})
+      .find({ email: { $ne: "saiful@gmail.com" } })
       .sort({ created_at: -1 }) // newest users first
       .toArray();
 
