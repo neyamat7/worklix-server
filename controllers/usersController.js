@@ -3,7 +3,7 @@ const { getDB, client } = require("../db");
 const usersCollection = getDB().collection("users");
 const tasksCollection = getDB().collection("tasks");
 const submissionsCollection = getDB().collection("submissions");
-const admin = require("../firebase");
+// const admin = require("../firebase");
 
 //create new user
 exports.createUser = async (req, res) => {
@@ -180,7 +180,8 @@ exports.deleteUser = async (req, res) => {
       const userEmail = user.email;
 
       // 2️⃣ Delete user from Firebase
-      await admin.auth().deleteUser(user.uid);
+      // implement later
+      // await admin.auth().deleteUser(user.uid);
 
       // 3️⃣ Delete user from MongoDB
       await usersCollection.deleteOne(
