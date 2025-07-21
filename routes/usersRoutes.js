@@ -17,14 +17,9 @@ router.get(
   usersController.getAllUsers
 );
 
-router.get(
-  "/single-user",
-  verifyFirebaseToken,
-  verifyTokenEmail,
-  usersController.getUserByExactEmail
-);
+router.get("/single-user", usersController.getUserByExactEmail);
 
-router.get("/role", verifyFirebaseToken, usersController.getUserRole);
+router.get("/role", usersController.getUserRole);
 
 // update user role
 router.patch(

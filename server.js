@@ -24,7 +24,8 @@ app.use(express.json());
 // Setup Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: "https://worklix.netlify.app",
+    // origin: "https://worklix.netlify.app",
+    origin: "*",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   },
