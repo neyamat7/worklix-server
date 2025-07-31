@@ -161,8 +161,8 @@ exports.approveWithdrawal = async (req, res) => {
       await notificationsCollection.insertOne(notification, { session });
 
       // Emit real-time event
-      const io = req.app.get("io");
-      io.to(worker_email).emit("new-notification", notification);
+      // const io = req.app.get("io");
+      // io.to(worker_email).emit("new-notification", notification);
     });
 
     res.json({

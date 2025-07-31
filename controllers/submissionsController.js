@@ -69,8 +69,8 @@ exports.saveSubmissionsData = async (req, res) => {
       await notificationsCollection.insertOne(notification, { session });
 
       // Emit real-time event
-      const io = req.app.get("io");
-      io.to(submission.buyer_email).emit("new-notification", notification);
+      // const io = req.app.get("io");
+      // io.to(submission.buyer_email).emit("new-notification", notification);
     });
 
     res.status(201).json({
@@ -297,8 +297,8 @@ exports.approveSubmission = async (req, res) => {
       // add notification for worker
       await notificationsCollection.insertOne(notification, { session });
       // Emit real-time event
-      const io = req.app.get("io");
-      io.to(worker_email).emit("new-notification", notification);
+      // const io = req.app.get("io");
+      // io.to(worker_email).emit("new-notification", notification);
     });
 
     res.json({ message: "Submission approved and worker paid successfully." });
@@ -363,8 +363,8 @@ exports.rejectSubmission = async (req, res) => {
       await notificationsCollection.insertOne(notification, { session });
 
       // Emit real-time event
-      const io = req.app.get("io");
-      io.to(worker_email).emit("new-notification", notification);
+      // const io = req.app.get("io");
+      // io.to(worker_email).emit("new-notification", notification);
     });
 
     res.json({ message: "Submission rejected and task updated successfully." });

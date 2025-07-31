@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
+// const http = require("http");
+// const { Server } = require("socket.io");
 const cors = require("cors");
 const { connectDB, getDB } = require("./db");
 const usersRoutes = require("./routes/usersRoutes");
@@ -15,21 +15,21 @@ const notificationsRoutes = require("./routes/notificationsRoutes");
 const publicRoutes = require("./routes/publicRoutes");
 
 const app = express();
-const server = http.createServer(app);
+// const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
 // Setup Socket.IO
-const io = new Server(server, {
-  cors: {
-    // origin: "https://worklix.netlify.app",
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    credentials: true,
-  },
-});
+// const io = new Server(server, {
+//   cors: {
+//     // origin: "https://worklix.netlify.app",
+//     origin: "*",
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//     credentials: true,
+//   },
+// });
 
 connectDB().then(() => {
   app.use("/users", usersRoutes);
@@ -45,23 +45,21 @@ connectDB().then(() => {
   app.get("/", (req, res) => res.send("Server start"));
 
   // Listen for connections
-  io.on("connection", (socket) => {
-    console.log("✅ A user connected:", socket.id);
+  // io.on("connection", (socket) => {
+  //   console.log("✅ A user connected:", socket.id);
 
-    socket.on("join", (email) => {
-      socket.join(email);
-      console.log(`Socket ${socket.id} joined room: ${email}`);
-    });
+  //   socket.on("join", (email) => {
+  //     socket.join(email);
+  //     console.log(`Socket ${socket.id} joined room: ${email}`);
+  //   });
 
-    socket.on("disconnect", () => {
-      console.log("❌ A user disconnected:", socket.id);
-    });
-  });
+  //   socket.on("disconnect", () => {
+  //     console.log("❌ A user disconnected:", socket.id);
+  //   });
+  // });
 
   // Make io accessible in your controllers
-  app.set("io", io);
+  // app.set("io", io);
 
-  server.listen(port, () =>
-    console.log(`Server with socket io is running on ${port}`)
-  );
+  app.listen(port, () => console.log(`Server is running on ${port}`));
 });
