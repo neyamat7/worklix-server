@@ -31,35 +31,35 @@ app.use(express.json());
 //   },
 // });
 
-connectDB().then(() => {
-  app.use("/users", usersRoutes);
-  app.use("/buyer", buyerRoutes);
-  app.use("/payments", paymentRoutes);
-  app.use("/worker", workerRoutes);
-  app.use("/submissions", submissionsRoutes);
-  app.use("/admin", adminRoutes);
-  app.use("/withdraw", withdrawRoutes);
-  app.use("/notifications", notificationsRoutes);
-  app.use("/public", publicRoutes);
+// connectDB().then(() => {
+app.use("/users", usersRoutes);
+app.use("/buyer", buyerRoutes);
+app.use("/payments", paymentRoutes);
+app.use("/worker", workerRoutes);
+app.use("/submissions", submissionsRoutes);
+app.use("/admin", adminRoutes);
+app.use("/withdraw", withdrawRoutes);
+app.use("/notifications", notificationsRoutes);
+app.use("/public", publicRoutes);
 
-  app.get("/", (req, res) => res.send("Server start"));
+app.get("/", (req, res) => res.send("Server start"));
 
-  // Listen for connections
-  // io.on("connection", (socket) => {
-  //   console.log("✅ A user connected:", socket.id);
+// Listen for connections
+// io.on("connection", (socket) => {
+//   console.log("✅ A user connected:", socket.id);
 
-  //   socket.on("join", (email) => {
-  //     socket.join(email);
-  //     console.log(`Socket ${socket.id} joined room: ${email}`);
-  //   });
+//   socket.on("join", (email) => {
+//     socket.join(email);
+//     console.log(`Socket ${socket.id} joined room: ${email}`);
+//   });
 
-  //   socket.on("disconnect", () => {
-  //     console.log("❌ A user disconnected:", socket.id);
-  //   });
-  // });
+//   socket.on("disconnect", () => {
+//     console.log("❌ A user disconnected:", socket.id);
+//   });
+// });
 
-  // Make io accessible in your controllers
-  // app.set("io", io);
+// Make io accessible in your controllers
+// app.set("io", io);
 
-  app.listen(port, () => console.log(`Server is running on ${port}`));
-});
+app.listen(port, () => console.log(`Server is running on ${port}`));
+// });
