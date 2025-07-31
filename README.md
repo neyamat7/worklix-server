@@ -13,7 +13,7 @@
   [![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white)](https://socket.io/)
   [![Stripe](https://img.shields.io/badge/Stripe-008CDD?style=for-the-badge&logo=stripe&logoColor=white)](https://stripe.com/)
 
-**🌐 Base URL:** [https://worklix-server.onrender.com](https://worklix-server.onrender.com)
+**🌐 Base URL:** [https://server-wine-five.vercel.app](https://server-wine-five.vercel.app)
 
 [🔗 Frontend App](https://worklix.netlify.app)
 
@@ -90,7 +90,7 @@
 ### **Base URL**
 
 ```
-https://worklix-server.onrender.com
+https://server-wine-five.vercel.app
 ```
 
 ### **Authentication**
